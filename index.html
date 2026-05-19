@@ -18,5 +18,137 @@
   <div class="confirm-box" id="confirmBox"><h2>✓ Réservation enregistrée</h2><p id="confirmText"></p></div>
 </main>
 <script>
-let CONFIG={},selectedDate=null,selectedTime=null,currentGroup=null;const DAYS_FR=['Dim','Lun','Mar','Mer','Jeu','Ven','Sam'],MONTHS_FR=['Jan','Fév','Mar','Avr','Mai','Juin','Juil','Aoû','Sep','Oct','Nov','Déc'],MONTHS_LONG=['janvier','février','mars','avril','mai','juin','juillet','août','septembre','octobre','novembre','décembre'];function removeAccents(s){return s.normalize('NFD').replace(/[\u0300-\u036f]/g,'')}function parseDate(s){const[d,m,y]=s.split('/');return new Date(`${y}-${m}-${d}T12:00:00`)}function formatDateKey(s){const[d,m,y]=s.split('/');return `${y}-${m}-${d}`}function getNextDays(ds,days){const n=new Date();n.setHours(0,0,0,0);const l=new Date(n);l.setDate(n.getDate()+days);return(ds||[]).filter(d=>{const dt=parseDate(d);return dt>=n&&dt<=l})}function generateSlots(st,en){const a=[];let[h,m]=st.split(':').map(Number);const[eh,em]=en.split(':').map(Number);while(h<eh||(h===eh&&m<em)){a.push(`${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}`);m+=15;if(m>=60){m-=60;h++}}return a}function detectGroup(t){const i=removeAccents(t.toLowerCase().trim());if(i.length<3)return null;const match=a=>(a||[]).some(k=>{const kk=removeAccents(String(k).toLowerCase().trim());return kk&&(i.includes(kk)||kk.includes(i))});if(match(CONFIG.keywordsB))return'B';if(match(CONFIG.keywordsA))return'A';return'A'}async function init(){CONFIG=await fetch('/api/public-config').then(r=>r.json())}function onSituationInput(){currentGroup=detectGroup(document.getElementById('situation').value);selectedDate=null;selectedTime=null;document.getElementById('slotsCard').style.display='none';document.getElementById('contactCard').style.display='none';if(!currentGroup){document.getElementById('dateArea').innerHTML='🔒<br>Veuillez d’abord renseigner votre situation.';return}renderDates()}function renderDates(){const dates=currentGroup==='A'?CONFIG.datesA:CONFIG.datesB;const visible=getNextDays(dates,currentGroup==='A'?14:21);if(!visible.length){document.getElementById('dateArea').innerHTML='📅<br>Aucun créneau disponible pour le moment.';return}document.getElementById('dateArea').innerHTML='<div class="date-grid">'+visible.map(d=>{const dt=parseDate(d);return`<div class="date-card" onclick="selectDate('${d}',this)"><strong>${dt.getDate()}</strong><br>${DAYS_FR[dt.getDay()]} — ${MONTHS_FR[dt.getMonth()]} ${dt.getFullYear()}</div>`}).join('')+'</div>'}async function selectDate(d,el){document.querySelectorAll('.date-card').forEach(x=>x.classList.remove('selected'));el.classList.add('selected');selectedDate=d;selectedTime=null;const dateKey=formatDateKey(d);const{booked}=await fetch('/api/slots?date='+encodeURIComponent(dateKey)).then(r=>r.json());const slots=currentGroup==='A'?generateSlots(CONFIG.aStart,CONFIG.aEnd):generateSlots(CONFIG.bStart,CONFIG.bEnd);document.getElementById('slotsCard').style.display='block';document.getElementById('slotArea').innerHTML='<div class="slot-grid">'+slots.map(t=>{const taken=booked.includes(t);return`<div class="slot-btn ${taken?'taken':''}" ${taken?'':`onclick="selectSlot('${t}',this)"`}>${t}${taken?' ✗':''}</div>`}).join('')+'</div>'}function selectSlot(t,el){document.querySelectorAll('.slot-btn').forEach(x=>x.classList.remove('selected'));el.classList.add('selected');selectedTime=t;document.getElementById('contactCard').style.display='block'}async function submitReservation(){const situation=document.getElementById('situation').value.trim(),prenom=document.getElementById('prenom').value.trim(),nom=document.getElementById('nom').value.trim(),tel=document.getElementById('tel').value.trim(),email=document.getElementById('email').value.trim(),message=document.getElementById('message').value.trim();if(!situation||!selectedDate||!selectedTime||!prenom||!nom||!tel||!email){alert('Veuillez compléter tous les champs obligatoires.');return}const dt=parseDate(selectedDate),date_label=`${DAYS_FR[dt.getDay()]} ${dt.getDate()} ${MONTHS_LONG[dt.getMonth()]} ${dt.getFullYear()}`,payload={date:formatDateKey(selectedDate),date_label,time:selectedTime,prenom,nom,tel,email,situation,groupe:currentGroup,message};const r=await fetch('/api/reserve',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)});const data=await r.json().catch(()=>({}));if(!r.ok){alert(data.error||'Erreur lors de la réservation.');return}document.getElementById('confirmText').textContent=`Votre visite est prévue le ${date_label} à ${selectedTime}.`;document.getElementById('confirmBox').classList.add('show');document.getElementById('contactCard').style.display='none'}init();
+let CONFIG={},selectedDate=null,selectedTime=null,currentGroup=null;const DAYS_FR=['Dim','Lun','Mar','Mer','Jeu','Ven','Sam'],MONTHS_FR=['Jan','Fév','Mar','Avr','Mai','Juin','Juil','Aoû','Sep','Oct','Nov','Déc'],MONTHS_LONG=['janvier','février','mars','avril','mai','juin','juillet','août','septembre','octobre','novembre','décembre'];function removeAccents(s){return s.normalize('NFD').replace(/[\u0300-\u036f]/g,'')}function parseDate(s){const[d,m,y]=s.split('/');return new Date(`${y}-${m}-${d}T12:00:00`)}function formatDateKey(s){const[d,m,y]=s.split('/');return `${y}-${m}-${d}`}function getNextDays(ds,days){const n=new Date();n.setHours(0,0,0,0);const l=new Date(n);l.setDate(n.getDate()+days);return(ds||[]).filter(d=>{const dt=parseDate(d);return dt>=n&&dt<=l})}function generateSlots(st,en){const a=[];let[h,m]=st.split(':').map(Number);const[eh,em]=en.split(':').map(Number);while(h<eh||(h===eh&&m<em)){a.push(`${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}`);m+=15;if(m>=60){m-=60;h++}}return a}function detectGroup(t){
+  const i = removeAccents(t.toLowerCase().trim());
+  if(i.length < 3) return null;
+
+  const match = a => (a || []).some(k => {
+    const kk = removeAccents(String(k).toLowerCase().trim());
+    return kk && i.includes(kk);
+  });
+
+  if(match(CONFIG.keywordsA)) return 'A';
+  if(match(CONFIG.keywordsB)) return 'B';
+
+  return null;
+}
+
+async function init(){
+  CONFIG = await fetch('/api/public-config').then(r => r.json());
+}
+
+function onSituationInput(){
+  currentGroup = detectGroup(document.getElementById('situation').value);
+  selectedDate = null;
+  selectedTime = null;
+  document.getElementById('slotsCard').style.display = 'none';
+  document.getElementById('contactCard').style.display = 'none';
+
+  if(!currentGroup){
+    document.getElementById('dateArea').innerHTML = '🔒<br>Veuillez d’abord renseigner votre situation.';
+    return;
+  }
+
+  renderDates();
+}
+
+function renderDates(){
+  const dates = currentGroup === 'A' ? CONFIG.datesA : CONFIG.datesB;
+  const visible = getNextDays(dates, currentGroup === 'A' ? 14 : 21);
+
+  if(!visible.length){
+    document.getElementById('dateArea').innerHTML = '📅<br>Aucun créneau disponible pour le moment.';
+    return;
+  }
+
+  document.getElementById('dateArea').innerHTML =
+    '<div class="date-grid">' +
+    visible.map(d => {
+      const dt = parseDate(d);
+      return `<div class="date-card" onclick="selectDate('${d}',this)"><strong>${dt.getDate()}</strong><br>${DAYS_FR[dt.getDay()]} — ${MONTHS_FR[dt.getMonth()]} ${dt.getFullYear()}</div>`;
+    }).join('') +
+    '</div>';
+}
+
+async function selectDate(d, el){
+  document.querySelectorAll('.date-card').forEach(x => x.classList.remove('selected'));
+  el.classList.add('selected');
+
+  selectedDate = d;
+  selectedTime = null;
+
+  const dateKey = formatDateKey(d);
+  const { booked } = await fetch('/api/slots?date=' + encodeURIComponent(dateKey)).then(r => r.json());
+  const slots = currentGroup === 'A'
+    ? generateSlots(CONFIG.aStart, CONFIG.aEnd)
+    : generateSlots(CONFIG.bStart, CONFIG.bEnd);
+
+  document.getElementById('slotsCard').style.display = 'block';
+
+  document.getElementById('slotArea').innerHTML =
+    '<div class="slot-grid">' +
+    slots.map(t => {
+      const taken = (booked || []).includes(t);
+      return `<div class="slot-btn ${taken ? 'taken' : ''}" ${taken ? '' : `onclick="selectSlot('${t}',this)"`}>${t}${taken ? ' ✗' : ''}</div>`;
+    }).join('') +
+    '</div>';
+}
+
+function selectSlot(t, el){
+  document.querySelectorAll('.slot-btn').forEach(x => x.classList.remove('selected'));
+  el.classList.add('selected');
+  selectedTime = t;
+  document.getElementById('contactCard').style.display = 'block';
+}
+
+async function submitReservation(){
+  const situation = document.getElementById('situation').value.trim();
+  const prenom = document.getElementById('prenom').value.trim();
+  const nom = document.getElementById('nom').value.trim();
+  const tel = document.getElementById('tel').value.trim();
+  const email = document.getElementById('email').value.trim();
+  const message = document.getElementById('message').value.trim();
+
+  if(!situation || !selectedDate || !selectedTime || !prenom || !nom || !tel || !email){
+    alert('Veuillez compléter tous les champs obligatoires.');
+    return;
+  }
+
+  const dt = parseDate(selectedDate);
+  const date_label = `${DAYS_FR[dt.getDay()]} ${dt.getDate()} ${MONTHS_LONG[dt.getMonth()]} ${dt.getFullYear()}`;
+
+  const payload = {
+    date: formatDateKey(selectedDate),
+    date_label,
+    time: selectedTime,
+    prenom,
+    nom,
+    tel,
+    email,
+    situation,
+    groupe: currentGroup,
+    message
+  };
+
+  const r = await fetch('/api/reserve', {
+    method: 'POST',
+    headers: {'Content-Type': 'application/json'},
+    body: JSON.stringify(payload)
+  });
+
+  const data = await r.json().catch(() => ({}));
+
+  if(!r.ok){
+    alert(data.error || 'Erreur lors de la réservation.');
+    return;
+  }
+
+  document.getElementById('confirmText').textContent =
+    `Votre visite est prévue le ${date_label} à ${selectedTime}.`;
+
+  document.getElementById('confirmBox').classList.add('show');
+  document.getElementById('contactCard').style.display = 'none';
+}
+
+init();
 </script></body></html>
