@@ -1,0 +1,2 @@
+import { supabaseAdmin, json } from './_lib.js';
+export default async function handler(req,res){const url=new URL(req.url,'http://local');const date=url.searchParams.get('date');if(!date)return json(res,400,{error:'date missing'});const db=supabaseAdmin();const {data,error}=await db.from('reservations').select('time').eq('date',date);if(error)return json(res,500,{error:error.message});return json(res,200,{booked:(data||[]).map(x=>x.time)});}

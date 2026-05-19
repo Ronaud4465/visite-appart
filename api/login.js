@@ -1,0 +1,2 @@
+import { createSessionCookie, json } from './_lib.js';
+export default async function handler(req,res){if(req.method!=='POST')return json(res,405,{error:'Method not allowed'});const chunks=[];for await(const c of req)chunks.push(c);const body=JSON.parse(Buffer.concat(chunks).toString()||'{}');if(!process.env.ADMIN_PASSWORD)return json(res,500,{error:'ADMIN_PASSWORD missing'});if(body.password!==process.env.ADMIN_PASSWORD)return json(res,401,{error:'Mot de passe incorrect'});return json(res,200,{ok:true},{'Set-Cookie':createSessionCookie()});}
