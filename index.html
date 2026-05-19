@@ -226,9 +226,11 @@ function detectGroup(t){
 }
 
 async function init(){
+  CONFIG = await fetch('/api/public-config').then(r => r.json());
 
-  CONFIG = await fetch('/api/public-config')
-    .then(r => r.json());
+  if (typeof CONFIG === 'string') {
+    CONFIG = JSON.parse(CONFIG);
+  }
 }
 
 function onSituationInput(){
