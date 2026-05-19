@@ -1,436 +1,108 @@
 <!doctype html>
 <html lang="fr">
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width,initial-scale=1">
-  <title>Réservation de visite — Appartement</title>
-
-  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="/style.css">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Réservation de visite — Appartement</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/style.css">
 </head>
-
 <body>
-
-<nav>
-  <div class="logo">⌂ Appartement — Visite</div>
-  <a class="navlink" href="/admin.html">Espace propriétaire</a>
-</nav>
+<nav><div class="logo">⌂ Appartement — Visite</div><a class="navlink" href="/admin.html">Espace propriétaire</a></nav>
 
 <section class="hero">
   <div class="hero-badge">Appartement disponible dès août</div>
-
-  <h1>
-    Planifiez votre<br>
-    <span>visite en ligne</span>
-  </h1>
-
-  <p>
-    Remplissez le formulaire ci-dessous pour réserver votre créneau de visite.
-  </p>
+  <h1>Planifiez votre<br><span>visite en ligne</span></h1>
+  <p>Remplissez le formulaire ci-dessous pour réserver votre créneau de visite.</p>
 </section>
 
 <main class="form-container">
-
   <div class="card">
-    <div class="section-title">
-      <span>Étape 1</span>
-      Votre situation
-    </div>
-
+    <div class="section-title"><span>Étape 1</span>Votre situation</div>
     <label>Décrivez votre situation professionnelle *</label>
+    <input id="situation" placeholder="Ex : employé dans une société, fonctionnaire, étudiant..." oninput="onSituationInput()">
+    <div class="hint" style="margin-top:.45rem">Indiquez simplement votre situation actuelle.</div>
+  </div>
 
-    <input
-      id="situation"
-      placeholder="Ex : employé dans une société, fonctionnaire, étudiant..."
-      oninput="onSituationInput()"
-    >
-
-    <div class="hint" style="margin-top:.45rem">
-      Indiquez simplement votre situation actuelle.
-    </div>
+  <div class="card" id="weekendOptionCard" style="display:none">
+    <div class="section-title"><span>Option exceptionnelle</span>Visite le samedi</div>
+    <label style="display:flex;gap:.6rem;align-items:center;text-transform:none;letter-spacing:0;font-size:.95rem;color:var(--dark)">
+      <input type="checkbox" id="weekendCheck" onchange="toggleWeekendMode()" style="width:auto">
+      Je ne suis disponible que le samedi
+    </label>
+    <div class="hint" style="margin-top:.5rem">Option activée exceptionnellement par le propriétaire et uniquement pour le Groupe B.</div>
   </div>
 
   <div class="card" id="datesCard">
-
-    <div class="section-title">
-      <span>Étape 2</span>
-      Choisissez une date
-    </div>
-
-    <div id="dateArea" class="locked-overlay">
-      🔒<br>
-      Veuillez d'abord renseigner votre situation à l'étape 1.
-    </div>
-
+    <div class="section-title"><span>Étape 2</span>Choisissez une date</div>
+    <div id="dateArea" class="locked-overlay">🔒<br>Veuillez d'abord renseigner votre situation à l'étape 1.</div>
   </div>
 
   <div class="card" id="slotsCard" style="display:none">
-
-    <div class="section-title">
-      <span>Étape 3</span>
-      Choisissez un créneau
-    </div>
-
+    <div class="section-title"><span>Étape 3</span>Choisissez un créneau</div>
     <div id="slotArea"></div>
+  </div>
 
+  <div class="card" id="weekendCard" style="display:none">
+    <div class="section-title"><span>Samedi exceptionnel</span>Indiquez votre disponibilité</div>
+    <div id="weekendDateArea"></div>
+    <label style="margin-top:1rem">Plage de disponibilité</label>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:.8rem">
+      <div><label>De</label><input type="time" id="wStart" value="09:00" onchange="checkWeekendGrouping()"></div>
+      <div><label>À</label><input type="time" id="wEnd" value="18:00" onchange="checkWeekendGrouping()"></div>
+    </div>
+    <div id="weekendGroupingMsg" class="notice" style="margin-top:1rem;display:none;text-align:left"></div>
+    <div class="fields-grid" style="margin-top:1rem">
+      <div class="full"><label>Nom et prénom *</label><input id="wNom"></div>
+      <div><label>Téléphone *</label><input id="wTel"></div>
+      <div><label>Email *</label><input id="wEmail" type="email"></div>
+      <div class="full"><label>Message facultatif</label><textarea id="wMessage"></textarea></div>
+    </div>
+    <br><button class="submit-btn" onclick="submitWeekend()">Envoyer ma demande samedi →</button>
   </div>
 
   <div class="card" id="contactCard" style="display:none">
-
-    <div class="section-title">
-      <span>Étape 4</span>
-      Vos coordonnées
-    </div>
-
+    <div class="section-title"><span>Étape 4</span>Vos coordonnées</div>
     <div class="fields-grid">
-
-      <div>
-        <label>Prénom *</label>
-        <input id="prenom" placeholder="Marie">
-      </div>
-
-      <div>
-        <label>Nom *</label>
-        <input id="nom" placeholder="Dupont">
-      </div>
-
-      <div>
-        <label>Téléphone *</label>
-        <input id="tel" placeholder="+32 4XX XX XX XX">
-      </div>
-
-      <div>
-        <label>Email *</label>
-        <input id="email" type="email" placeholder="marie@exemple.be">
-      </div>
-
-      <div class="full">
-        <label>Message facultatif</label>
-        <textarea id="message" placeholder="Nombre de personnes, questions..."></textarea>
-      </div>
-
+      <div><label>Prénom *</label><input id="prenom" placeholder="Marie"></div>
+      <div><label>Nom *</label><input id="nom" placeholder="Dupont"></div>
+      <div><label>Téléphone *</label><input id="tel" placeholder="+32 4XX XX XX XX"></div>
+      <div><label>Email *</label><input id="email" type="email" placeholder="marie@exemple.be"></div>
+      <div class="full"><label>Message facultatif</label><textarea id="message" placeholder="Nombre de personnes, questions..."></textarea></div>
     </div>
-
-    <br>
-
-    <button class="submit-btn" onclick="submitReservation()">
-      Confirmer ma réservation →
-    </button>
-
+    <br><button class="submit-btn" onclick="submitReservation()">Confirmer ma réservation →</button>
   </div>
 
-  <div class="confirm-box" id="confirmBox">
-    <h2>✓ Réservation enregistrée</h2>
-    <p id="confirmText"></p>
-  </div>
-
+  <div class="confirm-box" id="confirmBox"><h2>✓ Demande enregistrée</h2><p id="confirmText"></p></div>
 </main>
 
 <script>
-
-let CONFIG = {},
-    selectedDate = null,
-    selectedTime = null,
-    currentGroup = null;
-
-const DAYS_FR = ['Dim','Lun','Mar','Mer','Jeu','Ven','Sam'];
-
-const MONTHS_FR = [
-  'Jan','Fév','Mar','Avr','Mai','Juin',
-  'Juil','Aoû','Sep','Oct','Nov','Déc'
-];
-
-const MONTHS_LONG = [
-  'janvier','février','mars','avril','mai','juin',
-  'juillet','août','septembre','octobre','novembre','décembre'
-];
-
-function removeAccents(s){
-  return s.normalize('NFD').replace(/[\u0300-\u036f]/g,'');
-}
-
-function parseDate(s){
-  const [d,m,y] = s.split('/');
-  return new Date(`${y}-${m}-${d}T12:00:00`);
-}
-
-function formatDateKey(s){
-  const [d,m,y] = s.split('/');
-  return `${y}-${m}-${d}`;
-}
-
-function getNextDays(ds,days){
-
-  const n = new Date();
-  n.setHours(0,0,0,0);
-
-  const l = new Date(n);
-  l.setDate(n.getDate()+days);
-
-  return (ds || []).filter(d => {
-
-    const dt = parseDate(d);
-
-    return dt >= n && dt <= l;
-  });
-}
-
-function generateSlots(st,en){
-
-  const a = [];
-
-  let [h,m] = st.split(':').map(Number);
-
-  const [eh,em] = en.split(':').map(Number);
-
-  while(h < eh || (h === eh && m < em)){
-
-    a.push(
-      `${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}`
-    );
-
-    m += 15;
-
-    if(m >= 60){
-      m -= 60;
-      h++;
-    }
-  }
-
-  return a;
-}
-
-function detectGroup(t){
-
-  const i = removeAccents(t.toLowerCase().trim());
-
-  if(i.length < 3) return null;
-
-  const match = a => (a || []).some(k => {
-
-    const kk = removeAccents(
-      String(k).toLowerCase().trim()
-    );
-
-    return kk && (
-      i.includes(kk) ||
-      kk.includes(i)
-    );
-  });
-
-  if(match(CONFIG.keywordsB)) return 'B';
-
-  if(match(CONFIG.keywordsA)) return 'A';
-
-  return 'A';
-}
-
-async function init(){
-  CONFIG = await fetch('/api/public-config').then(r => r.json());
-
-  if (typeof CONFIG === 'string') {
-    CONFIG = JSON.parse(CONFIG);
-  }
-}
-
-function onSituationInput(){
-
-  currentGroup = detectGroup(
-    document.getElementById('situation').value
-  );
-
-  selectedDate = null;
-  selectedTime = null;
-
-  document.getElementById('slotsCard').style.display='none';
-  document.getElementById('contactCard').style.display='none';
-
-  if(!currentGroup){
-
-    document.getElementById('dateArea').innerHTML =
-      '🔒<br>Veuillez d’abord renseigner votre situation.';
-
-    return;
-  }
-
-  renderDates();
-}
-
-function renderDates(){
-
-  const dates = currentGroup === 'A'
-    ? CONFIG.datesA
-    : CONFIG.datesB;
-
-  const visible = getNextDays(
-    dates,
-    currentGroup === 'A' ? 14 : 21
-  );
-
-  if(!visible.length){
-
-    document.getElementById('dateArea').innerHTML =
-      '📅<br>Aucun créneau disponible pour le moment.';
-
-    return;
-  }
-
-  document.getElementById('dateArea').innerHTML =
-    '<div class="date-grid">' +
-
-    visible.map(d => {
-
-      const dt = parseDate(d);
-
-      return `
-        <div class="date-card"
-             onclick="selectDate('${d}',this)">
-
-          <strong>${dt.getDate()}</strong><br>
-
-          ${DAYS_FR[dt.getDay()]}
-          —
-          ${MONTHS_FR[dt.getMonth()]}
-          ${dt.getFullYear()}
-
-        </div>
-      `;
-    }).join('')
-
-    + '</div>';
-}
-
-async function selectDate(d,el){
-
-  document
-    .querySelectorAll('.date-card')
-    .forEach(x => x.classList.remove('selected'));
-
-  el.classList.add('selected');
-
-  selectedDate = d;
-  selectedTime = null;
-
-  const dateKey = formatDateKey(d);
-
-  const { booked } = await fetch(
-    '/api/slots?date=' + encodeURIComponent(dateKey)
-  ).then(r => r.json());
-
-  const slots = currentGroup === 'A'
-    ? generateSlots(CONFIG.aStart,CONFIG.aEnd)
-    : generateSlots(CONFIG.bStart,CONFIG.bEnd);
-
-  document.getElementById('slotsCard').style.display='block';
-
-  document.getElementById('slotArea').innerHTML =
-    '<div class="slot-grid">' +
-
-    slots.map(t => {
-
-      const taken = booked.includes(t);
-
-      return `
-        <div class="slot-btn ${taken ? 'taken' : ''}"
-             ${taken ? '' : `onclick="selectSlot('${t}',this)"`}>
-
-          ${t}${taken ? ' ✗' : ''}
-
-        </div>
-      `;
-    }).join('')
-
-    + '</div>';
-}
-
-function selectSlot(t,el){
-
-  document
-    .querySelectorAll('.slot-btn')
-    .forEach(x => x.classList.remove('selected'));
-
-  el.classList.add('selected');
-
-  selectedTime = t;
-
-  document.getElementById('contactCard').style.display='block';
-}
-
-async function submitReservation(){
-
-  const situation =
-    document.getElementById('situation').value.trim();
-
-  const prenom =
-    document.getElementById('prenom').value.trim();
-
-  const nom =
-    document.getElementById('nom').value.trim();
-
-  const tel =
-    document.getElementById('tel').value.trim();
-
-  const email =
-    document.getElementById('email').value.trim();
-
-  const message =
-    document.getElementById('message').value.trim();
-
-  if(
-    !situation ||
-    !selectedDate ||
-    !selectedTime ||
-    !prenom ||
-    !nom ||
-    !tel ||
-    !email
-  ){
-    alert('Veuillez compléter tous les champs obligatoires.');
-    return;
-  }
-
-  const dt = parseDate(selectedDate);
-
-  const date_label =
-    `${DAYS_FR[dt.getDay()]} ${dt.getDate()} ${MONTHS_LONG[dt.getMonth()]} ${dt.getFullYear()}`;
-
-  const payload = {
-    date: formatDateKey(selectedDate),
-    date_label,
-    time: selectedTime,
-    prenom,
-    nom,
-    tel,
-    email,
-    situation,
-    groupe: currentGroup,
-    message
-  };
-
-  const r = await fetch('/api/reserve', {
-    method:'POST',
-    headers:{'Content-Type':'application/json'},
-    body:JSON.stringify(payload)
-  });
-
-  const data = await r.json().catch(()=>({}));
-
-  if(!r.ok){
-    alert(data.error || 'Erreur lors de la réservation.');
-    return;
-  }
-
-  document.getElementById('confirmText').textContent =
-    `Votre visite est prévue le ${date_label} à ${selectedTime}.`;
-
-  document.getElementById('confirmBox').classList.add('show');
-
-  document.getElementById('contactCard').style.display='none';
-}
-
+let CONFIG={},selectedDate=null,selectedTime=null,currentGroup=null,weekendSelectedDate=null,weekendCommonStart=null,weekendCommonEnd=null;
+const DAYS_FR=['Dim','Lun','Mar','Mer','Jeu','Ven','Sam'];
+const MONTHS_FR=['Jan','Fév','Mar','Avr','Mai','Juin','Juil','Aoû','Sep','Oct','Nov','Déc'];
+const MONTHS_LONG=['janvier','février','mars','avril','mai','juin','juillet','août','septembre','octobre','novembre','décembre'];
+
+function removeAccents(s){return String(s||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'')}
+function parseDate(s){const[d,m,y]=String(s).split('/');return new Date(`${y}-${m}-${d}T12:00:00`)}
+function formatDateKey(s){const[d,m,y]=String(s).split('/');return `${y}-${m}-${d}`}
+function getNextDays(ds,days){const n=new Date();n.setHours(0,0,0,0);const l=new Date(n);l.setDate(n.getDate()+days);return(ds||[]).filter(d=>{const dt=parseDate(d);return dt>=n&&dt<=l})}
+function generateSlots(st,en){const a=[];let[h,m]=st.split(':').map(Number);const[eh,em]=en.split(':').map(Number);while(h<eh||(h===eh&&m<em)){a.push(`${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}`);m+=15;if(m>=60){m-=60;h++}}return a}
+function detectGroup(t){const i=removeAccents(t.toLowerCase().trim());if(i.length<3)return null;const match=a=>(a||[]).some(k=>{const kk=removeAccents(String(k).toLowerCase().trim());return kk&&(i.includes(kk)||kk.includes(i))});if(match(CONFIG.keywordsA))return'A';if(match(CONFIG.keywordsB))return'B';return null}
+async function init(){CONFIG=await fetch('/api/public-config').then(r=>r.json());if(typeof CONFIG==='string')CONFIG=JSON.parse(CONFIG)}
+function resetStandardFlow(){selectedDate=null;selectedTime=null;document.getElementById('slotsCard').style.display='none';document.getElementById('contactCard').style.display='none'}
+function onSituationInput(){currentGroup=detectGroup(document.getElementById('situation').value);resetStandardFlow();document.getElementById('weekendCard').style.display='none';const opt=document.getElementById('weekendOptionCard');const chk=document.getElementById('weekendCheck');if(!currentGroup){opt.style.display='none';document.getElementById('dateArea').innerHTML='🔒<br>Veuillez d’abord renseigner votre situation.';return}if(currentGroup==='B'&&CONFIG.weekendActive){opt.style.display='block'}else{opt.style.display='none';chk.checked=false}if(chk.checked&&currentGroup==='B'&&CONFIG.weekendActive){renderWeekendDates()}else{document.getElementById('datesCard').style.display='block';renderDates()}}
+function renderDates(){const dates=currentGroup==='A'?CONFIG.datesA:CONFIG.datesB;const visible=getNextDays(dates,currentGroup==='A'?14:21);if(!visible.length){document.getElementById('dateArea').innerHTML='📅<br>Aucun créneau disponible pour le moment.';return}document.getElementById('dateArea').innerHTML='<div class="date-grid">'+visible.map(d=>{const dt=parseDate(d);return`<div class="date-card" onclick="selectDate('${d}',this)"><strong>${dt.getDate()}</strong><br>${DAYS_FR[dt.getDay()]} — ${MONTHS_FR[dt.getMonth()]} ${dt.getFullYear()}</div>`}).join('')+'</div>'}
+async function selectDate(d,el){document.querySelectorAll('.date-card').forEach(x=>x.classList.remove('selected'));el.classList.add('selected');selectedDate=d;selectedTime=null;const{booked}=await fetch('/api/slots?date='+encodeURIComponent(formatDateKey(d))).then(r=>r.json());const slots=currentGroup==='A'?generateSlots(CONFIG.aStart,CONFIG.aEnd):generateSlots(CONFIG.bStart,CONFIG.bEnd);document.getElementById('slotsCard').style.display='block';document.getElementById('slotArea').innerHTML='<div class="slot-grid">'+slots.map(t=>{const taken=(booked||[]).includes(t);return`<div class="slot-btn ${taken?'taken':''}" ${taken?'':`onclick="selectSlot('${t}',this)"`}>${t}${taken?' ✗':''}</div>`}).join('')+'</div>'}
+function selectSlot(t,el){document.querySelectorAll('.slot-btn').forEach(x=>x.classList.remove('selected'));el.classList.add('selected');selectedTime=t;document.getElementById('contactCard').style.display='block'}
+function toggleWeekendMode(){const checked=document.getElementById('weekendCheck').checked;resetStandardFlow();if(checked){document.getElementById('datesCard').style.display='none';document.getElementById('weekendCard').style.display='block';renderWeekendDates()}else{document.getElementById('weekendCard').style.display='none';document.getElementById('datesCard').style.display='block';renderDates()}}
+function renderWeekendDates(){const visible=getNextDays(CONFIG.datesW||[],30).slice(0,2);weekendSelectedDate=null;if(!visible.length){document.getElementById('weekendDateArea').innerHTML='<div class="notice">Aucun samedi exceptionnel actuellement disponible.</div>';return}document.getElementById('weekendDateArea').innerHTML='<div class="date-grid">'+visible.map(d=>{const dt=parseDate(d);return`<div class="date-card" onclick="selectWeekendDate('${d}',this)"><strong>${dt.getDate()}</strong><br>Samedi — ${MONTHS_FR[dt.getMonth()]} ${dt.getFullYear()}</div>`}).join('')+'</div>'}
+function selectWeekendDate(d,el){document.querySelectorAll('#weekendDateArea .date-card').forEach(x=>x.classList.remove('selected'));el.classList.add('selected');weekendSelectedDate=d;checkWeekendGrouping()}
+function hourToInt(v){return Number(String(v||'0:00').split(':')[0])}
+function formatHour(h){return `${String(h).padStart(2,'0')}:00`}
+async function checkWeekendGrouping(){if(!weekendSelectedDate)return;const msg=document.getElementById('weekendGroupingMsg');const myStart=hourToInt(document.getElementById('wStart').value);const myEnd=hourToInt(document.getElementById('wEnd').value);const existing=await fetch('/api/weekend?jour='+encodeURIComponent(weekendSelectedDate)).then(r=>r.json()).catch(()=>[]);if(!Array.isArray(existing)||existing.length===0){weekendCommonStart=null;weekendCommonEnd=null;msg.style.display='block';msg.innerHTML='✅ Première demande pour ce samedi : vous pouvez indiquer votre plage de disponibilité.';return}weekendCommonStart=Math.max(...existing.map(x=>hourToInt(x.heure_debut||'08:00')));weekendCommonEnd=Math.min(...existing.map(x=>hourToInt(x.heure_fin||'20:00')));msg.style.display='block';const overlap=Math.max(weekendCommonStart,myStart)<Math.min(weekendCommonEnd,myEnd);msg.innerHTML=overlap?`✅ ${existing.length} demande(s) déjà enregistrée(s). Plage commune à respecter : <strong>${formatHour(weekendCommonStart)} → ${formatHour(weekendCommonEnd)}</strong>.`:`🚫 Votre plage ne correspond pas au regroupement souhaité. Choisissez une plage comprise dans : <strong>${formatHour(weekendCommonStart)} → ${formatHour(weekendCommonEnd)}</strong>.`}
+async function submitWeekend(){const situation=document.getElementById('situation').value.trim();const nom=document.getElementById('wNom').value.trim();const tel=document.getElementById('wTel').value.trim();const email=document.getElementById('wEmail').value.trim();const debut=document.getElementById('wStart').value;const fin=document.getElementById('wEnd').value;const message=document.getElementById('wMessage').value.trim();if(!situation||!weekendSelectedDate||!nom||!tel||!email){alert('Veuillez compléter les champs obligatoires et choisir un samedi.');return}const myStart=hourToInt(debut),myEnd=hourToInt(fin);if(!debut||!fin||myStart>=myEnd){alert('Veuillez sélectionner une plage horaire valide.');return}if(weekendCommonStart!==null&&weekendCommonEnd!==null){const overlap=Math.max(weekendCommonStart,myStart)<Math.min(weekendCommonEnd,myEnd);if(!overlap){alert(`Votre plage doit correspondre à la plage commune ${formatHour(weekendCommonStart)} → ${formatHour(weekendCommonEnd)}.`);return}}const r=await fetch('/api/weekend',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({nom,tel,email,jour:weekendSelectedDate,heure_debut:debut,heure_fin:fin,message})});if(!r.ok){alert('Erreur lors de la demande samedi.');return}document.getElementById('confirmText').textContent='Votre demande de visite le samedi a bien été enregistrée.';document.getElementById('confirmBox').classList.add('show');document.getElementById('weekendCard').style.display='none'}
+async function submitReservation(){const situation=document.getElementById('situation').value.trim(),prenom=document.getElementById('prenom').value.trim(),nom=document.getElementById('nom').value.trim(),tel=document.getElementById('tel').value.trim(),email=document.getElementById('email').value.trim(),message=document.getElementById('message').value.trim();if(!situation||!selectedDate||!selectedTime||!prenom||!nom||!tel||!email){alert('Veuillez compléter tous les champs obligatoires.');return}const dt=parseDate(selectedDate);const date_label=`${DAYS_FR[dt.getDay()]} ${dt.getDate()} ${MONTHS_LONG[dt.getMonth()]} ${dt.getFullYear()}`;const r=await fetch('/api/reserve',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({date:formatDateKey(selectedDate),date_label,time:selectedTime,prenom,nom,tel,email,situation,groupe:currentGroup,message})});const data=await r.json().catch(()=>({}));if(!r.ok){alert(data.error||'Erreur lors de la réservation.');return}document.getElementById('confirmText').textContent=`Votre visite est prévue le ${date_label} à ${selectedTime}.`;document.getElementById('confirmBox').classList.add('show');document.getElementById('contactCard').style.display='none'}
 init();
-
 </script>
-
 </body>
 </html>
